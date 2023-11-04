@@ -135,3 +135,56 @@ export function deepMerge(a, b) {
   return merged
 }
 ```
+
+11. Ensure test throw errors when user insert values of different types
+First option
+```ts
+test.fails('throw errors on merging two different types', () => {
+  const merged = deepMerge(
+    ['foo', 'bar'],
+    { foo: 'bar' }
+  )
+})
+```
+Hover this apprach does not distinguish how and when test fails.
+
+Second option
+```ts
+test('throw errors on merging two different types', () => {
+  expect(() => deepMerge(
+    ['foo', 'bar'],
+    { foo: 'bar' }
+  )).toThrowError()
+})
+```
+12. Update function and test to check proper error is thrown
+```ts
+export function deepMerge(a, b) {
+  if (Array.isArray(a) && Array.isArray(b)) {
+    return[ ...a, ...b]
+  }
+
+  if (Array.isArray(a) || Array.isArray(b) || typeof a !== typeof b) {
+    throw new Error('Error: Can not merge two different types')
+  }
+  
+  const merged = { ...a }
+
+  for (const key of Object.keys(b)) {
+    if (typeof a[key] === 'object' || Array.isArray(a[key]))
+      merged[key] = deepMerge(a[key], b[key])
+    else
+      merged[key] = b[key]
+  }
+
+  return merged
+}
+
+
+test('throw errors on merging two different types', () => {
+  expect(() => deepMerge(
+    ['foo', 'bar'],
+    { foo: 'bar' }
+  )).toThrowError('Error: Can not merge two different types')
+})
+```
