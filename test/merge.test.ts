@@ -40,3 +40,24 @@ test('shallow merge with array', () => {
     ['vue', 'react', 'svelte', 'solid']
   )
 })
+
+test('deep merge with overlaps', () => {
+  const merged = deepMerge({
+    name: 'Matteo',
+    accounts: {
+      github: 'unknown'
+    }    
+  }, {
+    accounts: {
+      twitter: 'none'
+    }    
+  })
+
+  expect(merged).toEqual({
+    name: 'Matteo',
+    accounts: {
+      github: 'unknown',
+      twitter: 'none'
+    }    
+  })
+})

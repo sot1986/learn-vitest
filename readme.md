@@ -68,3 +68,70 @@ export function deepMerge(a, b) {
   return Object.assign(a, b)
 }
 ```
+8. Make it working for deep merge
+```ts
+test('deep merge with overlaps', () => {
+  const merged = deepMerge({
+    name: 'Matteo',
+    accounts: {
+      github: 'unknown'
+    }    
+  }, {
+    accounts: {
+      twitter: 'none'
+    }    
+  })
+
+  expect(merged).toEqual({
+    name: 'Matteo',
+    accounts: {
+      github: 'unknown',
+      twitter: 'none'
+    }    
+  })
+})
+```
+Test fails. Because Object.assign not support more than 1 level merged
+
+9. update the function and ensure with skipping last test that everything works as well.
+```ts
+export function deepMerge(a, b) {
+  if (Array.isArray(a)) {
+    return[ ...a, ...b]
+  }
+
+  const merged = { ...a }
+
+  for (const key of Object.keys(b)) {
+    merged[key] = b[key]
+  }
+
+  return merged
+}
+
+test.skip('deep merge with overlaps', () => {
+// ...
+}
+```
+It works.
+Then remove the skip and see it is failing as expected.
+
+10. Update the deep merge to handle deep merge
+```ts
+export function deepMerge(a, b) {
+  if (Array.isArray(a)) {
+    return[ ...a, ...b]
+  }
+
+  const merged = { ...a }
+
+  for (const key of Object.keys(b)) {
+    if (typeof a[key] === 'object' || Array.isArray(a[key]))
+      merged[key] = deepMerge(a[key], b[key])
+    else
+      merged[key] = b[key]
+  }
+
+  return merged
+}
+```
